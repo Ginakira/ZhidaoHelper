@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      4.2
+// @version      4.2.1
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -22,6 +22,7 @@
     <li><button class=\"sakata-lbtns\" id=\"ssearch\">查询该题</button></li>\
     <li><button class='sakata-lbtns' id='clear-cnt'>计数清空</button></li>\
     <li><button class='sakata-lbtns' id='set-bkbtn'>设置模版</button></li>\
+    <li><button class='sakata-lbtns' id='btn-switch'>切换模版是否显示</button></li>\
     <li><a href=\"https://greasyfork.org/scripts/389850\" target=\"view_window\">脚本更新页面</a></li>\
     </div>";
     var btns = "<div class=\"sakata-tips\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
@@ -77,6 +78,8 @@
         localStorage.setItem("txbtn5", "未设置");
     if (!localStorage.getItem("txbtn6"))
         localStorage.setItem("txbtn6", "未设置");
+    if (!localStorage.getItem("btnOn"))
+        localStorage.setItem("btnOn", 1);
     //Function Part
     //Input box move to end
     function moveEnd(obj) {
@@ -136,8 +139,10 @@
     $(".audit-left-box").append("<div id='Scount'><b>今日打回：" + localStorage.BackCount
         + "<br>今日通过：" + localStorage.SubmitCount
         + "<br>通过率:" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</b>\<br></div>");
-    $(".list-overflow").after(btns);
-    createBkbtn();
+    if (localStorage.btnOn == 1) {
+        $(".list-overflow").after(btns);
+        createBkbtn();
+    }
     //Styles Part
     $(".sakata-leftbox").css({ "text-align": "center", "color": "#979797" });
     $(".sakata-lbtns").css({
@@ -221,10 +226,13 @@
             var adr = "https://www.baidu.com/s?wd=" + $(".q-tit")[0].innerText;
             window.open(adr, 'target', '');
         });
-        //Show the help info
-        $("#shelp").click(function () {
-            alert(help);
-        });
+        //Set Back buttons Display
+        $("#btn-switch").click(function () {
+            if (localStorage.btnOn == 0) localStorage.btnOn = 1;
+            else localStorage.btnOn = 0;
+            location.reload();
+        }
+        );
         //Set Back buttons
         $("#set-bkbtn").click(function () {
             var btnid = prompt("请输入要更改的按钮编号（1～6）： [留空取消]");
