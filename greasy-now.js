@@ -80,6 +80,8 @@
         localStorage.setItem("txbtn6", "未设置");
     if (!localStorage.getItem("btnOn"))
         localStorage.setItem("btnOn", 1);
+    if (!localStorage.getItem("Databased"))
+    localStorage.setItem("Databased", 0);
     //Function Part
     //Input box move to end
     function moveEnd(obj) {
@@ -248,5 +250,9 @@
         $(".input-btn").click(function () {
             introBackInsert(localStorage.getItem("sbtn" + this.id[5]));
         });
+        //If no databsed, create record to databse
+        if (localStorage.Databased != 1) {
+            console.log("NODB");
+        }
     });
 })();
