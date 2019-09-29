@@ -252,7 +252,10 @@
         });
         //If no databsed, create record to databse
         if (localStorage.Databased != 1) {
-            console.log("NODB");
+            var id = $(".u-username")[0].innerText;
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=create&uid=" + id + "&ps=" + localStorage.SubmitCount + "&bk=" + localStorage.BackCount, true);
+            xhr.send();
         }
     });
 })();
