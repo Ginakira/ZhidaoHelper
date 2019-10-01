@@ -43,6 +43,7 @@
         97: "小键盘1", 98: "小键盘2", 99: "小键盘3", 100: "小键盘4", 101: "小键盘5", 102: "小键盘6"
     };
     var re = /([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}(\/)/;
+    var uid = $(".u-username")[0].innerText;
     //Local Storage Part
     if (!localStorage.getItem("SkipCode"))
         localStorage.setItem("SkipCode", 192);
@@ -135,6 +136,22 @@
         }
         $(".input-box").append("<br><br>");
     }
+    //Database Operation
+    function cloudSync(op) {
+        var xhr = new XMLHttpRequest();
+        if (op == "add") {
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=create&uid=" + uid + "&ps=" + localStorage.SubmitCount + "&bk=" + localStorage.BackCount, true);
+            xhr.send();
+        }
+        else if (op == "updateBk") {
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updateBk&uid=" + uid + "&count=" + localStorage.BackCount, true);
+            xhr.send();
+        }
+        else if (op == "updatePs") {
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updatePs&uid=" + uid + "&count=" + localStorage.SubmitCount, true);            
+            xhr.send();
+        }
+    }
     //Element Append Part
     $(".audit-reply-question").before("<div class='ref-box'><b>参考资料网站：正在获取</b></div>");
     $(".audit-left-box").append(left);
@@ -180,6 +197,7 @@
             $("#Scount")[0].innerHTML = "<div id='Scount'><b>今日打回：" + localStorage.BackCount
                 + "<br>今日通过：" + localStorage.SubmitCount
                 + "<br>通过率:" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</b></div>"
+            cloudSync("updateBk");
         });
         $(".audit-submit-btn").click(function () {
             var cnt2 = parseInt(localStorage.SubmitCount);
@@ -188,6 +206,7 @@
             $("#Scount")[0].innerHTML = "<div id='Scount'><b>今日打回：" + localStorage.BackCount
                 + "<br>今日通过：" + localStorage.SubmitCount
                 + "<br>通过率:" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</b></div>"
+            cloudSync("updatePs");
         });
         $(".sakata-lbtns").hover(function () {
             $(this).css({ "background-color": "#1a97f0", "color": "white" });
@@ -252,10 +271,8 @@
         });
         //If no databsed, create record to databse
         if (localStorage.Databased != 1) {
-            var id = $(".u-username")[0].innerText;
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=create&uid=" + id + "&ps=" + localStorage.SubmitCount + "&bk=" + localStorage.BackCount, true);
-            xhr.send();
+            cloudSync("add");
+            localStorage.Databased = 1;
         }
     });
 })();
