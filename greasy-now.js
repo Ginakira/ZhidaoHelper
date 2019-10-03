@@ -22,7 +22,8 @@
     <li><button class=\"sakata-lbtns\" id=\"ssearch\">查询该题</button></li>\
     <li><button class='sakata-lbtns' id='clear-cnt'>计数清空</button></li>\
     <li><button class='sakata-lbtns' id='set-bkbtn'>设置模版</button></li>\
-    <li><button class='sakata-lbtns' id='btn-switch'>切换模版是否显示</button></li>\
+    <li><button class='sakata-lbtns' id='syncBtn'>云同步</button></li>\
+    <li><a href='javascript:void(0)' id='bkBtnSwitch'>切换模版是否显示</a></li>\
     <li><a href=\"https://greasyfork.org/scripts/389850\" target=\"view_window\">脚本更新页面</a></li>\
     </div>";
     var btns = "<div class=\"sakata-tips\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
@@ -82,7 +83,7 @@
     if (!localStorage.getItem("btnOn"))
         localStorage.setItem("btnOn", 1);
     if (!localStorage.getItem("Databased"))
-    localStorage.setItem("Databased", 0);
+        localStorage.setItem("Databased", 0);
     //Function Part
     //Input box move to end
     function moveEnd(obj) {
@@ -136,6 +137,12 @@
         }
         $(".input-box").append("<br><br>");
     }
+    //Back Button Switch
+    function btnSwitch() {
+        if (localStorage.btnOn == 0) localStorage.btnOn = 1;
+        else localStorage.btnOn = 0;
+        location.reload();
+    }
     //Database Operation
     function cloudSync(op) {
         var xhr = new XMLHttpRequest();
@@ -148,7 +155,7 @@
             xhr.send();
         }
         else if (op == "updatePs") {
-            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updatePs&uid=" + uid + "&count=" + localStorage.SubmitCount, true);            
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updatePs&uid=" + uid + "&count=" + localStorage.SubmitCount, true);
             xhr.send();
         }
     }
@@ -247,13 +254,6 @@
             var adr = "https://www.baidu.com/s?wd=" + $(".q-tit")[0].innerText;
             window.open(adr, 'target', '');
         });
-        //Set Back buttons Display
-        $("#btn-switch").click(function () {
-            if (localStorage.btnOn == 0) localStorage.btnOn = 1;
-            else localStorage.btnOn = 0;
-            location.reload();
-        }
-        );
         //Set Back buttons
         $("#set-bkbtn").click(function () {
             var btnid = prompt("请输入要更改的按钮编号（1～6）： [留空取消]");
@@ -274,5 +274,14 @@
             cloudSync("add");
             localStorage.Databased = 1;
         }
+        //Back Button Switch
+        $("#bkBtnSwitch").click(function () {
+            btnSwitch();
+        })
+        //All Data Cloud Sync
+        $("#syncBtn").click(function () {
+            cloudSync("updateBk");
+            cloudSync("updatePs");
+        })
     });
 })();
