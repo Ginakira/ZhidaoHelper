@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      4.2.1
+// @version      5.0
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
-// @require      http://code.jquery.com/jquery-1.11.0.min.js
+// @require      https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
+// @require      https://cdn.bootcss.com/sweetalert/2.1.2/sweetalert.min.js
 // @grant        none
 // @license      GPL
 // ==/UserScript==
@@ -282,6 +283,9 @@
         $("#syncBtn").click(function () {
             cloudSync("updateBk");
             cloudSync("updatePs");
+            swal('同步成功',
+                '统计数据已同步至服务器',
+                'success');
         })
     });
 })();
