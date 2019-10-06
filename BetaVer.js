@@ -1,11 +1,12 @@
 // ==UserScript==
-// @name         Dev版知道精选审核助手
+// @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      Dev3.10
+// @version      5.0
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
-// @require      http://code.jquery.com/jquery-1.11.0.min.js
+// @require      https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
+// @require      https://cdn.bootcss.com/sweetalert/2.1.2/sweetalert.min.js
 // @grant        none
 // @license      GPL
 // ==/UserScript==
@@ -22,6 +23,8 @@
     <li><button class=\"sakata-lbtns\" id=\"ssearch\">查询该题</button></li>\
     <li><button class='sakata-lbtns' id='clear-cnt'>计数清空</button></li>\
     <li><button class='sakata-lbtns' id='set-bkbtn'>设置模版</button></li>\
+    <li><button class='sakata-lbtns' id='syncBtn'>云同步</button></li>\
+    <li><a href='javascript:void(0)' id='bkBtnSwitch'>切换模版是否显示</a></li>\
     <li><a href=\"https://greasyfork.org/scripts/389850\" target=\"view_window\">脚本更新页面</a></li>\
     </div>";
     var btns = "<div class=\"sakata-tips\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
@@ -35,13 +38,14 @@
         8: "BackSpace", 9: "Tab", 12: "Clear", 13: "Enter", 16: "Shift", 17: "Control",
         18: "Alt", 20: "CapsLock", 27: "Esc", 32: "Spacebar", 33: "PageUp", 34: "PageDown",
         35: "End", 36: "Home", 37: "LeftArrow", 38: "UpArrow", 39: "RightArrow", 40: "DownArrow",
-        45: "Insert", 46: "Delete", 48: "0", 49: "1", 50: "2", 51: "3", 52: "4", 53: "5", 54: "6",
+        45: "Insert", 46: "Devare", 48: "0", 49: "1", 50: "2", 51: "3", 52: "4", 53: "5", 54: "6",
         55: "7", 56: "8", 57: "9", 65: "A", 66: "B", 67: "C", 68: "D", 69: "E", 70: "F", 71: "G",
         72: "H", 73: "I", 74: "J", 75: "K", 76: "L", 77: "M", 78: "N", 79: "O", 80: "P", 81: "Q",
         82: "R", 83: "S", 84: "T", 85: "U", 86: "V", 87: "W", 88: "X", 89: "Y", 90: "Z", 96: "小键盘0",
         97: "小键盘1", 98: "小键盘2", 99: "小键盘3", 100: "小键盘4", 101: "小键盘5", 102: "小键盘6"
     };
     var re = /([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}(\/)/;
+    var uid = $(".u-username")[0].innerText;
     //Local Storage Part
     if (!localStorage.getItem("SkipCode"))
         localStorage.setItem("SkipCode", 192);
@@ -77,6 +81,10 @@
         localStorage.setItem("txbtn5", "未设置");
     if (!localStorage.getItem("txbtn6"))
         localStorage.setItem("txbtn6", "未设置");
+    if (!localStorage.getItem("btnOn"))
+        localStorage.setItem("btnOn", 1);
+    if (!localStorage.getItem("Databased"))
+        localStorage.setItem("Databased", 0);
     //Function Part
     //Input box move to end
     function moveEnd(obj) {
@@ -130,14 +138,38 @@
         }
         $(".input-box").append("<br><br>");
     }
+    //Back Button Switch
+    function btnSwitch() {
+        if (localStorage.btnOn == 0) localStorage.btnOn = 1;
+        else localStorage.btnOn = 0;
+        location.reload();
+    }
+    //Database Operation
+    function cloudSync(op) {
+        var xhr = new XMLHttpRequest();
+        if (op == "add") {
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=create&uid=" + uid + "&ps=" + localStorage.SubmitCount + "&bk=" + localStorage.BackCount, true);
+            xhr.send();
+        }
+        else if (op == "updateBk") {
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updateBk&uid=" + uid + "&count=" + localStorage.BackCount, true);
+            xhr.send();
+        }
+        else if (op == "updatePs") {
+            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updatePs&uid=" + uid + "&count=" + localStorage.SubmitCount, true);
+            xhr.send();
+        }
+    }
     //Element Append Part
     $(".audit-reply-question").before("<div class='ref-box'><b>参考资料网站：正在获取</b></div>");
     $(".audit-left-box").append(left);
     $(".audit-left-box").append("<div id='Scount'><b>今日打回：" + localStorage.BackCount
         + "<br>今日通过：" + localStorage.SubmitCount
         + "<br>通过率:" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</b>\<br></div>");
-    $(".list-overflow").after(btns);
-    createBkbtn();
+    if (localStorage.btnOn == 1) {
+        $(".list-overflow").after(btns);
+        createBkbtn();
+    }
     //Styles Part
     $(".sakata-leftbox").css({ "text-align": "center", "color": "#979797" });
     $(".sakata-lbtns").css({
@@ -173,6 +205,7 @@
             $("#Scount")[0].innerHTML = "<div id='Scount'><b>今日打回：" + localStorage.BackCount
                 + "<br>今日通过：" + localStorage.SubmitCount
                 + "<br>通过率:" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</b></div>"
+            cloudSync("updateBk");
         });
         $(".audit-submit-btn").click(function () {
             var cnt2 = parseInt(localStorage.SubmitCount);
@@ -181,6 +214,7 @@
             $("#Scount")[0].innerHTML = "<div id='Scount'><b>今日打回：" + localStorage.BackCount
                 + "<br>今日通过：" + localStorage.SubmitCount
                 + "<br>通过率:" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</b></div>"
+            cloudSync("updatePs");
         });
         $(".sakata-lbtns").hover(function () {
             $(this).css({ "background-color": "#1a97f0", "color": "white" });
@@ -221,10 +255,6 @@
             var adr = "https://www.baidu.com/s?wd=" + $(".q-tit")[0].innerText;
             window.open(adr, 'target', '');
         });
-        //Show the help info
-        $("#shelp").click(function () {
-            alert(help);
-        });
         //Set Back buttons
         $("#set-bkbtn").click(function () {
             var btnid = prompt("请输入要更改的按钮编号（1～6）： [留空取消]");
@@ -240,5 +270,20 @@
         $(".input-btn").click(function () {
             introBackInsert(localStorage.getItem("sbtn" + this.id[5]));
         });
+        //If no databsed, create record to databse
+        if (localStorage.Databased != 1) {
+            cloudSync("add");
+            localStorage.Databased = 1;
+        }
+        //Back Button Switch
+        $("#bkBtnSwitch").click(btnSwitch);
+        //All Data Cloud Sync
+        $("#syncBtn").click(function () {
+            cloudSync("updateBk");
+            cloudSync("updatePs");
+            swal('同步成功',
+                '统计数据已同步至服务器',
+                'success');
+        })
     });
 })();
