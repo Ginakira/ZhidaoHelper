@@ -83,8 +83,6 @@
         localStorage.setItem("txbtn6", "未设置");
     if (!localStorage.getItem("btnOn"))
         localStorage.setItem("btnOn", 1);
-    if (!localStorage.getItem("Databased"))
-        localStorage.setItem("Databased", 0);
     //Function Part
     //Input box move to end
     function moveEnd(obj) {
@@ -145,20 +143,22 @@
         location.reload();
     }
     //Database Operation
-    function cloudSync(op) {
-        let xhr = new XMLHttpRequest();
-        if (op == "add") {
-            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=create&uid=" + uid + "&ps=" + localStorage.SubmitCount + "&bk=" + localStorage.BackCount, true);
-            xhr.send();
+    function cloudSync() {
+        let syncData = {
+            id: uid,
+            pass: localStorage.SubmitCount,
+            back: localStorage.BackCount
         }
-        else if (op == "updateBk") {
-            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updateBk&uid=" + uid + "&count=" + localStorage.BackCount, true);
-            xhr.send();
-        }
-        else if (op == "updatePs") {
-            xhr.open("GET", "http://47.95.4.250/prac/zhidao.php?ord=updatePs&uid=" + uid + "&count=" + localStorage.SubmitCount, true);
-            xhr.send();
-        }
+
+        $.ajax({
+            type: "POST",
+            url: "https://jmsu.xyz/prac/stage/php/syncStat.php",
+            data: syncData,
+            dataType: "JSON",
+            success: function (response) {
+                alert(response);
+            }
+        });
     }
     //Update Statistic spans
     function updateSpans() {
@@ -210,14 +210,14 @@
             cnt1 += 1;
             localStorage.BackCount = cnt1;
             updateSpans();
-            cloudSync("updateBk");
+            cloudSync();
         });
         $(".audit-submit-btn").click(function () {
             let cnt2 = parseInt(localStorage.SubmitCount);
             cnt2 += 1;
             localStorage.SubmitCount = cnt2;
             updateSpans();
-            cloudSync("updatePs");
+            cloudSync();
         });
         $(".sakata-lbtns").hover(function () {
             $(this).css({ "background-color": "#1a97f0", "color": "white" });
@@ -272,20 +272,18 @@
         $(".input-btn").click(function () {
             introBackInsert(localStorage.getItem("sbtn" + this.id[5]));
         });
-        //If no databsed, create record to databse
-        if (localStorage.Databased != 1) {
-            cloudSync("add");
-            localStorage.Databased = 1;
-        }
         //Back Button Switch
         $("#bkBtnSwitch").click(btnSwitch);
         //All Data Cloud Sync
         $("#syncBtn").click(function () {
-            cloudSync("updateBk");
-            cloudSync("updatePs");
-            swal('同步成功',
-                '统计数据已同步至服务器',
-                'success');
+            cloudSync();
+            swal({
+                title: '同步成功',
+                text: '数据已成功同步至服务器',
+                icon: 'success',
+                buttons: false,
+                timer: 800,
+            });
         })
     });
 })();
