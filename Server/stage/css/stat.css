@@ -1,0 +1,92 @@
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 0px;
+    margin: 0px;
+    border: 0px;
+}
+
+a {
+    text-decoration: none;
+}
+
+header {
+    position: relative;
+    height: 56px;
+    width: 100%;
+    background: #4DC86F;
+}
+
+#h-title {
+    display: inline-block;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    height: 56px;
+    line-height: 56px;
+    margin-left: 25px;
+}
+
+.left-nav {
+    position: fixed;
+    display: inline-block;
+    left: 0;
+    height: 100%;
+    width: 8%;
+    background: rgb(248, 242, 242);
+    text-align: center;
+}
+
+.left-nav ul li {
+    display: block;
+    margin-top: 15px;
+    height: 55px;
+    line-height: 55px;
+    color: rgb(124, 124, 124);
+    -webkit-transition: ease-in-out 0.3s;
+    transition: ease-in-out 0.3s;
+}
+
+.left-nav ul li:hover {
+    background: rgb(214, 214, 214);
+    cursor: pointer;
+}
+
+.left-nav ul li a:visited {
+    color: rgb(124, 124, 124);
+}
+
+.info-frame {
+    margin-left: 8%;
+    padding: 5px;
+}
+
+.info-buttons {
+    margin-left: 15px;
+}
+
+.btn-primary {
+    position: relative;
+    display: inline-block;
+    color: #fff;
+    font-size: 15px;
+    height: 40px;
+    width: 90px;
+    margin: 10px 15px 15px 0;
+    border: 1px solid #0070CC;
+    background:#0070CC;
+    transition: background 0.3s;
+	-webkit-transition:background 0.3s;
+}
+
+.btn-primary:hover {
+    border-color: #005AA5;
+    background:#005AA5;
+    cursor: pointer;
+}
+
+.info-tips {
+    text-align: right;
+}
