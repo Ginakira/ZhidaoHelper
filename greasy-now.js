@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.1
+// @version      5.2
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,6 +14,7 @@
 (function () {
     'use strict';
     //Value Part
+    let version = 5.2;
     let left = "<div class=\"sakata-leftbox\">\
     <li>更改完后点击任意空白处生效</li>\
     <li>跳过键：<select class=\"key-option\" id = \"sk-opt\"></select></li>\
@@ -25,24 +26,105 @@
     <li><button class='sakata-lbtns' id='set-bkbtn'>设置模版</button></li>\
     <li><button class='sakata-lbtns' id='syncBtn'>云同步</button></li>\
     <li><a href='javascript:void(0)' id='bkBtnSwitch'>切换模版是否显示</a></li>\
-    <li><a href=\"https://greasyfork.org/scripts/389850\" target=\"view_window\">脚本更新页面</a></li>\
     </div>";
     let btns = "<div class=\"sakata-tips\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
     <div class=\"input-box\">\
     </div>";
     let codeTrans = {
-        112: "F1", 113: "F2", 114: "F3", 115: "F4", 116: "F5", 117: "F6", 118: "F7", 119: "F8",
-        120: "F9", 121: "F10", 122: "F11", 123: "F12", 144: "NumLock", 106: "小键盘*", 107: "小键盘+",
-        108: "小键盘Enter", 109: "小键盘-", 110: "小键盘.", 111: "小键盘/", 186: ";", 187: "= +", 189: "-", 190: ". >",
-        191: "/ ?", 192: "` ~", 219: "[{", 220: "\\ |", 221: "] }", 103: "小键盘7", 104: "小键盘8", 105: "小键盘9",
-        8: "BackSpace", 9: "Tab", 12: "Clear", 13: "Enter", 16: "Shift", 17: "Control",
-        18: "Alt", 20: "CapsLock", 27: "Esc", 32: "Spacebar", 33: "PageUp", 34: "PageDown",
-        35: "End", 36: "Home", 37: "LeftArrow", 38: "UpArrow", 39: "RightArrow", 40: "DownArrow",
-        45: "Insert", 46: "Delete", 48: "0", 49: "1", 50: "2", 51: "3", 52: "4", 53: "5", 54: "6",
-        55: "7", 56: "8", 57: "9", 65: "A", 66: "B", 67: "C", 68: "D", 69: "E", 70: "F", 71: "G",
-        72: "H", 73: "I", 74: "J", 75: "K", 76: "L", 77: "M", 78: "N", 79: "O", 80: "P", 81: "Q",
-        82: "R", 83: "S", 84: "T", 85: "U", 86: "V", 87: "W", 88: "X", 89: "Y", 90: "Z", 96: "小键盘0",
-        97: "小键盘1", 98: "小键盘2", 99: "小键盘3", 100: "小键盘4", 101: "小键盘5", 102: "小键盘6"
+        112: "F1",
+        113: "F2",
+        114: "F3",
+        115: "F4",
+        116: "F5",
+        117: "F6",
+        118: "F7",
+        119: "F8",
+        120: "F9",
+        121: "F10",
+        122: "F11",
+        123: "F12",
+        144: "NumLock",
+        106: "小键盘*",
+        107: "小键盘+",
+        108: "小键盘Enter",
+        109: "小键盘-",
+        110: "小键盘.",
+        111: "小键盘/",
+        186: ";",
+        187: "= +",
+        189: "-",
+        190: ". >",
+        191: "/ ?",
+        192: "` ~",
+        219: "[{",
+        220: "\\ |",
+        221: "] }",
+        103: "小键盘7",
+        104: "小键盘8",
+        105: "小键盘9",
+        8: "BackSpace",
+        9: "Tab",
+        12: "Clear",
+        13: "Enter",
+        16: "Shift",
+        17: "Control",
+        18: "Alt",
+        20: "CapsLock",
+        27: "Esc",
+        32: "Spacebar",
+        33: "PageUp",
+        34: "PageDown",
+        35: "End",
+        36: "Home",
+        37: "LeftArrow",
+        38: "UpArrow",
+        39: "RightArrow",
+        40: "DownArrow",
+        45: "Insert",
+        46: "Delete",
+        48: "0",
+        49: "1",
+        50: "2",
+        51: "3",
+        52: "4",
+        53: "5",
+        54: "6",
+        55: "7",
+        56: "8",
+        57: "9",
+        65: "A",
+        66: "B",
+        67: "C",
+        68: "D",
+        69: "E",
+        70: "F",
+        71: "G",
+        72: "H",
+        73: "I",
+        74: "J",
+        75: "K",
+        76: "L",
+        77: "M",
+        78: "N",
+        79: "O",
+        80: "P",
+        81: "Q",
+        82: "R",
+        83: "S",
+        84: "T",
+        85: "U",
+        86: "V",
+        87: "W",
+        88: "X",
+        89: "Y",
+        90: "Z",
+        96: "小键盘0",
+        97: "小键盘1",
+        98: "小键盘2",
+        99: "小键盘3",
+        100: "小键盘4",
+        101: "小键盘5",
+        102: "小键盘6"
     };
     let re = /([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}(\/)/;
     let uid = $(".u-username")[0].innerText;
@@ -152,7 +234,7 @@
 
         $.ajax({
             type: "POST",
-            url: "https://jmsu.xyz/prac/stage/php/syncStat.php",
+            url: "https://api.jmsu.xyz/zhidao/php/syncStat.php",
             data: syncData,
             dataType: "JSON",
             success: function (response) {
@@ -167,38 +249,91 @@
         $Scount.find('span')[1].innerText = localStorage.SubmitCount;
         $Scount.find('span')[2].innerText = toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount)));
     }
+
+    //Check Update From Server
+    function checkUpdate() {
+        let server_ver = 0;
+        $.ajax({
+            type: "GET",
+            dataType: "JSON",
+            url: "https://api.jmsu.xyz/zhidao/php/checkUpdate.php",
+            async: false,
+            success: function (response) {
+                server_ver = response.version;
+            }
+        });
+        if (server_ver > version) {
+            swal({
+                title: "发现新版本",
+                text: "请更新到最新版本以获得最佳体验",
+                icon: "info",
+                buttons: {
+                    cancel: "忽略",
+                    confirm: {
+                        text: "更新",
+                        value: true
+                    }
+
+                }
+            }).then((value) => {
+                if (value) {
+                    window.open("https://greasyfork.org/scripts/389850-知道精选审核助手/code/知道精选审核助手.user.js")
+                }
+            })
+        }
+    }
+
     //Element Append Part
     $(".audit-reply-question").before("<div class='ref-box'><b>参考资料网站：正在获取</b></div>");
     $(".audit-left-box").append(left);
-    $(".audit-left-box").append("<div id='Scount'><b>今日打回：<span id='backCount'>" + localStorage.BackCount
-        + "</span><br>今日通过：<span id='submitCount'>" + localStorage.SubmitCount
-        + "</span><br>通过率:<span id='passPercent'>" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</span></b>\<br></div>");
+    $(".audit-left-box").append("<div id='Scount'><b>今日打回：<span id='backCount'>" + localStorage.BackCount +
+        "</span><br>今日通过：<span id='submitCount'>" + localStorage.SubmitCount +
+        "</span><br>通过率:<span id='passPercent'>" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</span></b>\<br></div>");
     if (localStorage.btnOn == 1) {
         $(".list-overflow").after(btns);
         createBkbtn();
     }
     //Styles Part
-    $(".sakata-leftbox").css({ "text-align": "center", "color": "#979797" });
+    $(".sakata-leftbox").css({
+        "text-align": "center",
+        "color": "#979797"
+    });
     $(".sakata-lbtns").css({
-        "width": "80%", "padding": "10", "cursor": "pointer", "border-radius": "20px",
-        "background": "white", "color": "#1a97f0", "border": "2px solid #1a97f0", "margin": "5px"
+        "width": "80%",
+        "padding": "10",
+        "cursor": "pointer",
+        "border-radius": "20px",
+        "background": "white",
+        "color": "#1a97f0",
+        "border": "2px solid #1a97f0",
+        "margin": "5px"
     });
     $(".input-btn").css({
-        "padding": "6px", "cursor": "pointer", "border-radius": "15px", "background": "#f4f7f9",
-        "color": "#1a97f0", "border": "2px solid #1a97f0", "margin-top": "5px", "margin-right": "4px"
+        "padding": "6px",
+        "cursor": "pointer",
+        "border-radius": "15px",
+        "background": "#f4f7f9",
+        "color": "#1a97f0",
+        "border": "2px solid #1a97f0",
+        "margin-top": "5px",
+        "margin-right": "4px"
     });
-    $("#stip").css({ "color": "red", "font-size": "12px", "cursor": "point" });
+    $("#stip").css({
+        "color": "red",
+        "font-size": "12px",
+        "cursor": "point"
+    });
 
     //Activities Part
     //Listening shortcut keys
     $(document).keydown(function (event) {
-        if (event.keyCode == localStorage.SkipCode) {//～跳过
+        if (event.keyCode == localStorage.SkipCode) { //～跳过
             $('.active')[0].click();
         }
-        if (event.keyCode == localStorage.BackCode) {//F1/F7打回
+        if (event.keyCode == localStorage.BackCode) { //F1/F7打回
             $('.audit-back-btn')[0].click();
         }
-        if (event.keyCode == localStorage.SubmitCode) {//F2/F8通过
+        if (event.keyCode == localStorage.SubmitCode) { //F2/F8通过
             $('.audit-submit-btn')[0].click();
         }
     });
@@ -220,18 +355,32 @@
             cloudSync();
         });
         $(".sakata-lbtns").hover(function () {
-            $(this).css({ "background-color": "#1a97f0", "color": "white" });
+            $(this).css({
+                "background-color": "#1a97f0",
+                "color": "white"
+            });
         }, function () {
-            $(this).css({ "background": "white", "color": "#1a97f0" });
+            $(this).css({
+                "background": "white",
+                "color": "#1a97f0"
+            });
         });
         $(".input-btn").hover(function () {
-            $(this).css({ "background-color": "#1a97f0", "color": "white" });
+            $(this).css({
+                "background-color": "#1a97f0",
+                "color": "white"
+            });
         }, function () {
-            $(this).css({ "background": "#f4f7f9", "color": "#1a97f0" });
+            $(this).css({
+                "background": "#f4f7f9",
+                "color": "#1a97f0"
+            });
         });
         //Listening Part
         //Show references' href
-        $(".ref-box").css({ "color": "#01024e" });
+        $(".ref-box").css({
+            "color": "#01024e"
+        });
         setInterval(getRef, 1500);
         //Create options and load & save settings
         createOption();
@@ -251,7 +400,14 @@
             localStorage.SubmitCount = 0;
             localStorage.BackCount = 0;
             updateSpans();
-            swal('清空成功', '统计数据已清零', 'success');
+            swal({
+                title: '清空成功',
+                text: '统计数据已清零',
+                icon: 'success',
+                buttons: false,
+                timer: 800,
+            });
+            checkUpdate();
         });
         $("#ssearch").click(function () {
             let adr = "https://www.baidu.com/s?wd=" + $(".q-tit")[0].innerText;
@@ -285,5 +441,6 @@
                 timer: 800,
             });
         })
+        checkUpdate();
     });
 })();
