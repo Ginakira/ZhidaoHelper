@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.2
+// @version      5.3
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,8 +14,9 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.2;
-    let left = "<div class=\"sakata-leftbox\">\
+    let version = 5.3;
+    let interval_id;
+    let left = "<div class=\"sakata-leftbox sakata\">\
     <li>更改完后点击任意空白处生效</li>\
     <li>跳过键：<select class=\"key-option\" id = \"sk-opt\"></select></li>\
     <li>打回键：<select class=\"key-option\" id = \"bk-opt\"></select></li>\
@@ -26,9 +27,10 @@
     <li><button class='sakata-lbtns' id='set-bkbtn'>设置模版</button></li>\
     <li><button class='sakata-lbtns' id='syncBtn'>云同步</button></li>\
     <li><a href='javascript:void(0)' id='bkBtnSwitch'>切换模版是否显示</a></li>\
+    <li><a href='javascript:void(0)' id='closeAddon'>暂时隐藏插件（刷新恢复）</a></li>\
     </div>";
-    let btns = "<div class=\"sakata-tips\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
-    <div class=\"input-box\">\
+    let btns = "<div class=\"sakata-tips sakata\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
+    <div class=\"input-box sakata\">\
     </div>";
     let codeTrans = {
         112: "F1",
@@ -224,6 +226,14 @@
         else localStorage.btnOn = 0;
         location.reload();
     }
+    //Close Addon
+    function closeAddon() {
+        let s = $(".sakata");
+        for (let i = 0; i < s.length; ++i) {
+            s[i].remove();
+        }
+        clearInterval(interval_id);
+    }
     //Database Operation
     function cloudSync() {
         let syncData = {
@@ -284,9 +294,9 @@
     }
 
     //Element Append Part
-    $(".audit-reply-question").before("<div class='ref-box'><b>参考资料网站：正在获取</b></div>");
+    $(".audit-reply-question").before("<div class='ref-box sakata'><b>参考资料网站：正在获取</b></div>");
     $(".audit-left-box").append(left);
-    $(".audit-left-box").append("<div id='Scount'><b>今日打回：<span id='backCount'>" + localStorage.BackCount +
+    $(".audit-left-box").append("<div class='sakata' id='Scount'><b>今日打回：<span id='backCount'>" + localStorage.BackCount +
         "</span><br>今日通过：<span id='submitCount'>" + localStorage.SubmitCount +
         "</span><br>通过率:<span id='passPercent'>" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</span></b>\<br></div>");
     if (localStorage.btnOn == 1) {
@@ -381,7 +391,7 @@
         $(".ref-box").css({
             "color": "#01024e"
         });
-        setInterval(getRef, 1500);
+        interval_id = setInterval(getRef, 1500);
         //Create options and load & save settings
         createOption();
         $(".key-option")[0].value = localStorage.SkipCode;
@@ -430,6 +440,8 @@
         });
         //Back Button Switch
         $("#bkBtnSwitch").click(btnSwitch);
+        //Close Addon
+        $("#closeAddon").click(closeAddon);
         //All Data Cloud Sync
         $("#syncBtn").click(function () {
             cloudSync();
