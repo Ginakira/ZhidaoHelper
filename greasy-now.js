@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.4
+// @version      5.5
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,7 +14,7 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.4;
+    let version = 5.5;
     let interval_id1;
     let interval_id2;
     let left = "<div class=\"sakata-leftbox sakata\">\
@@ -223,8 +223,10 @@
             cnt += half > 1 ? half - 1 : 0;
             cnt += full > 1 ? full - 1 : 0;
         }
-        let tip = "<div class='reply-bad-reson sakata'><span> *【脚本检测到乱码】：</span> 回答内容中含有 " + cnt + " 个全/半角问号 </div>";
-        if (cnt > 0) $('.audit-good').before(tip);
+        let tip = "<div class='sakata-bad-reason sakata' style='\
+        line-height:40px; font-size:14px; padding:0 21px;background:#fcf5b0;border:1px solid #E8ECEE;border-radius:4px;color:#272727'>\
+        <span> *【脚本检测到乱码】：</span> 回答内容中含有 " + cnt + " 个全/半角问号 </div>";
+        if (cnt > 0) $('.audit-reply-question').after(tip);
     }
     //Calculate Percent
     function toPercent(point) {
@@ -296,6 +298,7 @@
     //Check Update From Server
     function checkUpdate() {
         let server_ver = 0;
+        let log;
         $.ajax({
             type: "GET",
             dataType: "JSON",
@@ -303,12 +306,14 @@
             async: false,
             success: function (response) {
                 server_ver = response.version;
+                log = response.log;
             }
         });
+        console.log(log);
         if (server_ver > version) {
             swal({
-                title: "发现新版本",
-                text: "请更新到最新版本以获得最佳体验",
+                title: "发现新版本 V" + server_ver,
+                text: log,
                 icon: "info",
                 buttons: {
                     cancel: "忽略",
@@ -365,7 +370,6 @@
         "font-size": "12px",
         "cursor": "point"
     });
-
     //Activities Part
     //Listening shortcut keys
     $(document).keydown(function (event) {
@@ -430,7 +434,7 @@
         }
         if (localStorage.errOn == 1) {
             interval_id2 = setInterval(function () {
-                $('.reply-bad-reson').remove();
+                $('.sakata-bad-reason').remove();
                 errCodeCount();
             }, 1500);
         }
