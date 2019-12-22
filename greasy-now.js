@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.3
+// @version      5.4
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,8 +14,9 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.3;
-    let interval_id;
+    let version = 5.4;
+    let interval_id1;
+    let interval_id2;
     let left = "<div class=\"sakata-leftbox sakata\">\
     <li>更改完后点击任意空白处生效</li>\
     <li>跳过键：<select class=\"key-option\" id = \"sk-opt\"></select></li>\
@@ -26,8 +27,10 @@
     <li><button class='sakata-lbtns' id='clear-cnt'>计数清空</button></li>\
     <li><button class='sakata-lbtns' id='set-bkbtn'>设置模版</button></li>\
     <li><button class='sakata-lbtns' id='syncBtn'>云同步</button></li>\
-    <li><a href='javascript:void(0)' id='bkBtnSwitch'>切换模版是否显示</a></li>\
-    <li><a href='javascript:void(0)' id='closeAddon'>暂时隐藏插件（刷新恢复）</a></li>\
+    <li><a href='javascript:void(0)' id='bkBtnSwitch'>开/关模版按钮显示</a></li>\
+    <li><a href='javascript:void(0)' id='refBoxSwitch'>开/关参考资料检测</a></li>\
+    <li><a href='javascript:void(0)' id='errCodeSwitch'>开/关乱码检测</a></li>\
+    <li><a href='javascript:void(0)' id='closeAddon'>暂时隐藏插件</a></li>\
     </div>";
     let btns = "<div class=\"sakata-tips sakata\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
     <div class=\"input-box sakata\">\
@@ -167,6 +170,10 @@
         localStorage.setItem("txbtn6", "未设置");
     if (!localStorage.getItem("btnOn"))
         localStorage.setItem("btnOn", 1);
+    if (!localStorage.getItem("refOn"))
+        localStorage.setItem("refOn", 1);
+    if (!localStorage.getItem("errOn"))
+        localStorage.setItem("errOn", 1);
     //Function Part
     //Input box move to end
     function moveEnd(obj) {
@@ -206,6 +213,19 @@
         };
         if (refs.length == 0) $(".ref-box")[0].innerHTML = "<b>参考资料网站：无</b>";
     }
+    //Count the amount of '?'(ErrCode)
+    function errCodeCount() {
+        let cnt = 0;
+        let obj = $('.audit-detail-full p');
+        for (let i = 0; i < obj.length; ++i) {
+            let half = obj[i].innerText.split('?').length;
+            let full = obj[i].innerText.split('？').length;
+            cnt += half > 1 ? half - 1 : 0;
+            cnt += full > 1 ? full - 1 : 0;
+        }
+        let tip = "<div class='reply-bad-reson sakata'><span> *【脚本检测到乱码】：</span> 回答内容中含有 " + cnt + " 个全/半角问号 </div>";
+        if (cnt > 0) $('.audit-good').before(tip);
+    }
     //Calculate Percent
     function toPercent(point) {
         let str = Number(point * 100).toFixed(1);
@@ -226,13 +246,26 @@
         else localStorage.btnOn = 0;
         location.reload();
     }
+
+    function refBoxSwitch() {
+        if (localStorage.refOn == 0) localStorage.refOn = 1;
+        else localStorage.refOn = 0;
+        location.reload();
+    }
+
+    function errCodeSwitch() {
+        if (localStorage.errOn == 0) localStorage.errOn = 1;
+        else localStorage.errOn = 0;
+        location.reload();
+    }
     //Close Addon
     function closeAddon() {
         let s = $(".sakata");
         for (let i = 0; i < s.length; ++i) {
             s[i].remove();
         }
-        clearInterval(interval_id);
+        clearInterval(interval_id1);
+        clearInterval(interval_id2);
     }
     //Database Operation
     function cloudSync() {
@@ -292,9 +325,8 @@
             })
         }
     }
-
     //Element Append Part
-    $(".audit-reply-question").before("<div class='ref-box sakata'><b>参考资料网站：正在获取</b></div>");
+    if (localStorage.refOn == 1) $(".audit-reply-question").before("<div class='ref-box sakata'><b>参考资料网站：正在获取</b></div>");
     $(".audit-left-box").append(left);
     $(".audit-left-box").append("<div class='sakata' id='Scount'><b>今日打回：<span id='backCount'>" + localStorage.BackCount +
         "</span><br>今日通过：<span id='submitCount'>" + localStorage.SubmitCount +
@@ -387,11 +419,22 @@
             });
         });
         //Listening Part
-        //Show references' href
+        //When title changed - Change references' href & statistic '?'
         $(".ref-box").css({
             "color": "#01024e"
         });
-        interval_id = setInterval(getRef, 1500);
+        if (localStorage.refOn == 1) {
+            interval_id1 = setInterval(function () {
+                getRef();
+            }, 1500);
+        }
+        if (localStorage.errOn == 1) {
+            interval_id2 = setInterval(function () {
+                $('.reply-bad-reson').remove();
+                errCodeCount();
+            }, 1500);
+        }
+
         //Create options and load & save settings
         createOption();
         $(".key-option")[0].value = localStorage.SkipCode;
@@ -440,6 +483,9 @@
         });
         //Back Button Switch
         $("#bkBtnSwitch").click(btnSwitch);
+        $("#refBoxSwitch").click(refBoxSwitch);
+        $("#errCodeSwitch").click(errCodeSwitch);
+
         //Close Addon
         $("#closeAddon").click(closeAddon);
         //All Data Cloud Sync
