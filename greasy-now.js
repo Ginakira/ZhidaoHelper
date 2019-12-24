@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.6
+// @version      5.7
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,7 +14,7 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.6;
+    let version = 5.7;
     let interval_id1;
     let interval_id2;
     let left = "<div class=\"sakata-leftbox sakata\">\
@@ -515,7 +515,7 @@
         } else {
             $("#refBoxStat").html("<font color='red'>关闭</font>");
         }
-        if (localStorage.btnOn == 1) {
+        if (localStorage.errOn == 1) {
             $("#errCodeStat").html("<font color='green'>开启</font>");
         } else {
             $("#errCodeStat").html("<font color='red'>关闭</font>");
