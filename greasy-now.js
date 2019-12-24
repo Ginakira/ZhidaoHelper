@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.5
+// @version      5.6
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,7 +14,7 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.5;
+    let version = 5.6;
     let interval_id1;
     let interval_id2;
     let left = "<div class=\"sakata-leftbox sakata\">\
@@ -27,9 +27,9 @@
     <li><button class='sakata-lbtns' id='clear-cnt'>计数清空</button></li>\
     <li><button class='sakata-lbtns' id='set-bkbtn'>设置模版</button></li>\
     <li><button class='sakata-lbtns' id='syncBtn'>云同步</button></li>\
-    <li><a href='javascript:void(0)' id='bkBtnSwitch'>开/关模版按钮显示</a></li>\
-    <li><a href='javascript:void(0)' id='refBoxSwitch'>开/关参考资料检测</a></li>\
-    <li><a href='javascript:void(0)' id='errCodeSwitch'>开/关乱码检测</a></li>\
+    <li>模版按钮：<span id='bkBtnStat'></span><a href='javascript:void(0)' id='bkBtnSwitch'>  切换</a></li>\
+    <li>参考资料检测：<span id='refBoxStat'></span><a href='javascript:void(0)' id='refBoxSwitch'>  切换</a></li>\
+    <li>乱码检测：<span id='errCodeStat'></span><a href='javascript:void(0)' id='errCodeSwitch'>  切换</a></li>\
     <li><a href='javascript:void(0)' id='closeAddon'>暂时隐藏插件</a></li>\
     </div>";
     let btns = "<div class=\"sakata-tips sakata\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
@@ -289,10 +289,16 @@
     }
     //Update Statistic spans
     function updateSpans() {
-        let $Scount = $("#Scount");
-        $Scount.find('span')[0].innerText = localStorage.BackCount;
-        $Scount.find('span')[1].innerText = localStorage.SubmitCount;
-        $Scount.find('span')[2].innerText = toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount)));
+        let $Scount = $("#Scount span");
+        $Scount[0].innerText = localStorage.BackCount;
+        $Scount[1].innerText = localStorage.SubmitCount;
+        let percent = parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount));
+        if (percent * 100 >= 70) {
+            $Scount[2].innerHTML = "<font color='red'>" + toPercent(percent) + "</font>";
+        } else {
+            $Scount[2].innerHTML = "<font color='green'>" + toPercent(percent) + "</font>";
+
+        }
     }
 
     //Check Update From Server
@@ -309,7 +315,6 @@
                 log = response.log;
             }
         });
-        console.log(log);
         if (server_ver > version) {
             swal({
                 title: "发现新版本 V" + server_ver,
@@ -333,9 +338,9 @@
     //Element Append Part
     if (localStorage.refOn == 1) $(".audit-reply-question").before("<div class='ref-box sakata'><b>参考资料网站：正在获取</b></div>");
     $(".audit-left-box").append(left);
-    $(".audit-left-box").append("<div class='sakata' id='Scount'><b>今日打回：<span id='backCount'>" + localStorage.BackCount +
-        "</span><br>今日通过：<span id='submitCount'>" + localStorage.SubmitCount +
-        "</span><br>通过率:<span id='passPercent'>" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</span></b>\<br></div>");
+    $(".audit-left-box").append("<div class='sakata-counter sakata' id='Scount'>今日打回：<b><span id='backCount'>" + localStorage.BackCount +
+        "</span></b><br>今日通过：<b><span id='submitCount'>" + localStorage.SubmitCount +
+        "</span></b><br>通过率: <b><span id='passPercent'>" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</span></b></div>");
     if (localStorage.btnOn == 1) {
         $(".list-overflow").after(btns);
         createBkbtn();
@@ -343,7 +348,8 @@
     //Styles Part
     $(".sakata-leftbox").css({
         "text-align": "center",
-        "color": "#979797"
+        "color": "#979797",
+        "text-align": "left"
     });
     $(".sakata-lbtns").css({
         "width": "80%",
@@ -369,6 +375,16 @@
         "color": "red",
         "font-size": "12px",
         "cursor": "point"
+    });
+    $(".sakata-counter").css({
+        "line-height": "40px",
+        "font-size": "14px",
+        "padding": "0 21px",
+        "background": "#f5f8fa",
+        "border": "1px solid #E8ECEE",
+        "border-radius": "4px",
+        "color": "#7a8f9a",
+        "margin-top": "10px"
     });
     //Activities Part
     //Listening shortcut keys
@@ -438,7 +454,6 @@
                 errCodeCount();
             }, 1500);
         }
-
         //Create options and load & save settings
         createOption();
         $(".key-option")[0].value = localStorage.SkipCode;
@@ -485,11 +500,26 @@
         $(".input-btn").click(function () {
             introBackInsert(localStorage.getItem("sbtn" + this.id[5]));
         });
-        //Back Button Switch
+        //Functions Switch
         $("#bkBtnSwitch").click(btnSwitch);
         $("#refBoxSwitch").click(refBoxSwitch);
         $("#errCodeSwitch").click(errCodeSwitch);
-
+        //Update status tips if switch changed
+        if (localStorage.btnOn == 1) {
+            $("#bkBtnStat").html("<font color='green'>开启</font>");
+        } else {
+            $("#bkBtnStat").html("<font color='red'>关闭</font>");
+        }
+        if (localStorage.refOn == 1) {
+            $("#refBoxStat").html("<font color='green'>开启</font>");
+        } else {
+            $("#refBoxStat").html("<font color='red'>关闭</font>");
+        }
+        if (localStorage.btnOn == 1) {
+            $("#errCodeStat").html("<font color='green'>开启</font>");
+        } else {
+            $("#errCodeStat").html("<font color='red'>关闭</font>");
+        }
         //Close Addon
         $("#closeAddon").click(closeAddon);
         //All Data Cloud Sync
@@ -504,5 +534,6 @@
             });
         })
         checkUpdate();
+        updateSpans();
     });
 })();
