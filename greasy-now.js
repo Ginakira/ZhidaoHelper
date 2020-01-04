@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.7
+// @version      5.8
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,7 +14,7 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.7;
+    let version = 5.8;
     let interval_id1;
     let interval_id2;
     let left = "<div class=\"sakata-leftbox sakata\">\
@@ -29,7 +29,7 @@
     <li><button class='sakata-lbtns' id='syncBtn'>云同步</button></li>\
     <li>模版按钮：<span id='bkBtnStat'></span><a href='javascript:void(0)' id='bkBtnSwitch'>  切换</a></li>\
     <li>参考资料检测：<span id='refBoxStat'></span><a href='javascript:void(0)' id='refBoxSwitch'>  切换</a></li>\
-    <li>乱码检测：<span id='errCodeStat'></span><a href='javascript:void(0)' id='errCodeSwitch'>  切换</a></li>\
+    <li>标点检测：<span id='errCodeStat'></span><a href='javascript:void(0)' id='errCodeSwitch'>  切换</a></li>\
     <li><a href='javascript:void(0)' id='closeAddon'>暂时隐藏插件</a></li>\
     </div>";
     let btns = "<div class=\"sakata-tips sakata\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
@@ -144,30 +144,26 @@
         localStorage.setItem("BackCount", 0);
     if (!localStorage.getItem("SubmitCount"))
         localStorage.setItem("SubmitCount", 0);
-    if (!localStorage.getItem("sbtn1"))
-        localStorage.setItem("sbtn1", "模版未设置");
-    if (!localStorage.getItem("sbtn2"))
-        localStorage.setItem("sbtn2", "模版未设置");
-    if (!localStorage.getItem("sbtn3"))
-        localStorage.setItem("sbtn3", "模版未设置");
-    if (!localStorage.getItem("sbtn4"))
-        localStorage.setItem("sbtn4", "模版未设置");
-    if (!localStorage.getItem("sbtn5"))
-        localStorage.setItem("sbtn5", "模版未设置");
-    if (!localStorage.getItem("sbtn6"))
-        localStorage.setItem("sbtn6", "模版未设置");
-    if (!localStorage.getItem("txbtn1"))
-        localStorage.setItem("txbtn1", "未设置");
-    if (!localStorage.getItem("txbtn2"))
-        localStorage.setItem("txbtn2", "未设置");
-    if (!localStorage.getItem("txbtn3"))
-        localStorage.setItem("txbtn3", "未设置");
-    if (!localStorage.getItem("txbtn4"))
-        localStorage.setItem("txbtn4", "未设置");
-    if (!localStorage.getItem("txbtn5"))
-        localStorage.setItem("txbtn5", "未设置");
-    if (!localStorage.getItem("txbtn6"))
-        localStorage.setItem("txbtn6", "未设置");
+    if (!localStorage.getItem("sbtn")) { //Template content
+        var obj = [];
+        //Migrate Old template content
+        for (var i = 1; i <= 6; ++i) {
+            var name = "sbtn" + i;
+            obj.push(localStorage.getItem(name));
+            localStorage.removeItem(name);
+        }
+        localStorage.setItem("sbtn", JSON.stringify(obj));
+    }
+    if (!localStorage.getItem("txbtn")) { //Template button text
+        obj = [];
+        //Migrate Old template content
+        for (var i = 1; i <= 6; ++i) {
+            var name = "txbtn" + i;
+            obj.push(localStorage.getItem(name));
+            localStorage.removeItem(name);
+        }
+        localStorage.setItem("txbtn", JSON.stringify(obj));
+    }
     if (!localStorage.getItem("btnOn"))
         localStorage.setItem("btnOn", 1);
     if (!localStorage.getItem("refOn"))
@@ -218,14 +214,14 @@
         let cnt = 0;
         let obj = $('.audit-detail-full p');
         for (let i = 0; i < obj.length; ++i) {
-            let half = obj[i].innerText.split('?').length;
-            let full = obj[i].innerText.split('？').length;
+            let half = obj[i].innerText.split(',').length;
+            //let full = obj[i].innerText.split('？').length;
             cnt += half > 1 ? half - 1 : 0;
-            cnt += full > 1 ? full - 1 : 0;
+            //cnt += full > 1 ? full - 1 : 0;
         }
         let tip = "<div class='sakata-bad-reason sakata' style='\
         line-height:40px; font-size:14px; padding:0 21px;background:#fcf5b0;border:1px solid #E8ECEE;border-radius:4px;color:#272727'>\
-        <span> *【脚本检测到乱码】：</span> 回答内容中含有 " + cnt + " 个全/半角问号 </div>";
+        <span> *【脚本检测到非中文标点】：</span> 回答内容中含有 " + cnt + " 个半角逗号 </div>";
         if (cnt > 0) $('.audit-reply-question').after(tip);
     }
     //Calculate Percent
@@ -236,9 +232,9 @@
     }
     //Create Back-Button
     function createBkbtn() {
-        let btname = "txbtn";
+        let txbtns = JSON.parse(localStorage.txbtn);
         for (let i = 1; i <= 6; ++i) {
-            $(".input-box").append("<button class='input-btn' id='" + btname + i + "'>" + localStorage.getItem(btname + i) + "</button>");
+            $(".input-box").append("<button class='input-btn' id='txbtn" + i + "'>" + txbtns[i - 1] + "</button>");
         }
         $(".input-box").append("<br><br>");
     }
@@ -492,13 +488,20 @@
                 let btnst = prompt("按钮名称更改为：");
                 let btntx = prompt("模版内容：");
                 document.getElementById("txbtn" + btnid).innerText = btnst;
-                localStorage.setItem("sbtn" + btnid, btntx);
-                localStorage.setItem("txbtn" + btnid, btnst);
+                var sbtns = JSON.parse(localStorage.sbtn);
+                var txbtns = JSON.parse(localStorage.txbtn);
+                sbtns[btnid - 1] = btntx;
+                txbtns[btnid - 1] = btnst;
+                localStorage.setItem("sbtn", JSON.stringify(sbtns));
+                localStorage.setItem("txbtn", JSON.stringify(txbtns));
+                //localStorage.setItem("sbtn" + btnid, btntx);
+                //localStorage.setItem("txbtn" + btnid, btnst);
             }
         })
         //Insert back texts
         $(".input-btn").click(function () {
-            introBackInsert(localStorage.getItem("sbtn" + this.id[5]));
+            //introBackInsert(localStorage.getItem("sbtn" + this.id[5]));
+            introBackInsert(JSON.parse(localStorage.sbtn)[this.id[5] - 1]);
         });
         //Functions Switch
         $("#bkBtnSwitch").click(btnSwitch);
