@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.8
+// @version      5.9
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -14,7 +14,7 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.8;
+    let version = 5.9;
     let interval_id1;
     let interval_id2;
     let left = "<div class=\"sakata-leftbox sakata\">\
@@ -31,6 +31,8 @@
     <li>参考资料检测：<span id='refBoxStat'></span><a href='javascript:void(0)' id='refBoxSwitch'>  切换</a></li>\
     <li>标点检测：<span id='errCodeStat'></span><a href='javascript:void(0)' id='errCodeSwitch'>  切换</a></li>\
     <li><a href='javascript:void(0)' id='closeAddon'>暂时隐藏插件</a></li>\
+    <li><font color='blue'>按Alt键统计选中内容字数</font></li>\
+    <li>选中字数：<span id='word-count'></span></li>\
     </div>";
     let btns = "<div class=\"sakata-tips sakata\"><a id=\"stip\">点击完按钮后请按一下空格 否则无法打回</a></div>\
     <div class=\"input-box sakata\">\
@@ -296,7 +298,11 @@
 
         }
     }
-
+    //Word count
+    function word_count() {
+        var cnt = window.getSelection().toString().length;
+        $('#word-count').html("<font color='blue'>" + cnt + "</font>")
+    }
     //Check Update From Server
     function checkUpdate() {
         let server_ver = 0;
@@ -387,12 +393,12 @@
     $(document).keydown(function (event) {
         if (event.keyCode == localStorage.SkipCode) { //～跳过
             $('.active')[0].click();
-        }
-        if (event.keyCode == localStorage.BackCode) { //F1/F7打回
+        } else if (event.keyCode == localStorage.BackCode) { //F1/F7打回
             $('.audit-back-btn')[0].click();
-        }
-        if (event.keyCode == localStorage.SubmitCode) { //F2/F8通过
+        } else if (event.keyCode == localStorage.SubmitCode) { //F2/F8通过
             $('.audit-submit-btn')[0].click();
+        } else if (event.keyCode == 18) {
+            word_count();
         }
     });
     //READY PART
