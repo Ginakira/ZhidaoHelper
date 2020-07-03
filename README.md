@@ -1,5 +1,5 @@
 # ZhidaoHelper
-现行版本：v5.9 最后更新：2020/01/05
+现行版本：v6.0 最后更新：2020/07/03
 
 BaiduZhidao Audit Script
 
