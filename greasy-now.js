@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         知道精选审核助手
 // @namespace    https://sakata.ml/
-// @version      5.9
+// @version      6.0
 // @description  为精选审核平台添加快捷功能
 // @author       坂田银串
 // @match        *://zhidao.baidu.com/review/excellentreview*
@@ -337,12 +337,24 @@
             })
         }
     }
+    // Get surplus
+    function getSurplus() {
+        $.ajax({
+            type: "GET",
+            dataType: "JSON",
+            url: "https://zhidao.baidu.com/review/ajax/getexcellentsurplus",
+            success: function(response) {
+                $('#surplus')[0].innerText = response.data.replySurplus;
+            }
+        })
+    }
+    // function
     //Element Append Part
     if (localStorage.refOn == 1) $(".audit-reply-question").before("<div class='ref-box sakata'><b>参考资料网站：正在获取</b></div>");
     $(".audit-left-box").append(left);
     $(".audit-left-box").append("<div class='sakata-counter sakata' id='Scount'>今日打回：<b><span id='backCount'>" + localStorage.BackCount +
         "</span></b><br>今日通过：<b><span id='submitCount'>" + localStorage.SubmitCount +
-        "</span></b><br>通过率: <b><span id='passPercent'>" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</span></b></div>");
+        "</span></b><br>通过率: <b><span id='passPercent'>" + toPercent(parseInt(localStorage.SubmitCount) / (parseInt(localStorage.BackCount) + parseInt(localStorage.SubmitCount))) + "</span></b><br/>分类余量：<b><span id='surplus'></span></b></div>");
     if (localStorage.btnOn == 1) {
         $(".list-overflow").after(btns);
         createBkbtn();
@@ -456,6 +468,10 @@
                 errCodeCount();
             }, 1500);
         }
+        // Listen surplus
+        setInterval(() => {
+            getSurplus();
+        }, 1500);
         //Create options and load & save settings
         createOption();
         $(".key-option")[0].value = localStorage.SkipCode;
