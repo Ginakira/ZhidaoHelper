@@ -14,7 +14,7 @@
 (function () {
     'use strict';
     //Value Part
-    let version = 5.9;
+    let version = 6.0;
     let interval_id1;
     let interval_id2;
     let left = "<div class=\"sakata-leftbox sakata\">\
